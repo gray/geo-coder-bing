@@ -9,14 +9,17 @@ WriteMakefile(
     VERSION_FROM  => 'lib/Geo/Coder/Bing.pm',
     ABSTRACT_FROM => 'lib/Geo/Coder/Bing.pm',
     PREREQ_PM     => {
-        'JSON'       => 0,
+        'JSON'       => 2.0,
         'Test::More' => 0,
     },
     (eval { ExtUtils::MakeMaker->VERSION(6.46) } ? (
         META_MERGE => {
-            resources => {
+            resources  => {
                 repository => 'http://github.com/gray/geo-coder-bing',
-            }
+            },
+            recommends => {
+                'JSON::XS' => 2.0,
+            },
         }
     ) : () ),
     dist          => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
