@@ -9,8 +9,10 @@ WriteMakefile(
     VERSION_FROM  => 'lib/Geo/Coder/Bing.pm',
     ABSTRACT_FROM => 'lib/Geo/Coder/Bing.pm',
     PREREQ_PM     => {
-        'JSON'       => 2.0,
-        'Test::More' => 0,
+        'JSON'           => 2.0,
+        'LWP::UserAgent' => 0,
+        'Test::More'     => 0,
+        'URI'            => 0,
     },
     (eval { ExtUtils::MakeMaker->VERSION(6.46) } ? (
         META_MERGE => {

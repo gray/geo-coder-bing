@@ -1,4 +1,10 @@
 Revision history for Geo-Coder-Bing
 
+0.02  Tue Jul 7 19:01:23 UTC 2009
+    - Fixed prereqs.
+    - Added example for custom useragent.
+    - Added live tests (for author).
+    - Moved author tests into separate directory.    
+
 0.01  Mon Jul 6 10:07:59 UTC 2009
     - Initial distribution.
