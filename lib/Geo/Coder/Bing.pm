@@ -13,12 +13,16 @@ our $VERSION = '0.02';
 sub new {
     my ($class, %params) = @_;
 
-    my $ua = delete $params{ua};
-    unless (ref $ua and $ua->isa(q(LWP::UserAgent))) {
-        $ua = LWP::UserAgent->new(agent => "$class/$VERSION"),
+    my $self = bless {}, $class;
+
+    if ($params{ua}) {
+        $self->ua($params{ua});
+    }
+    else {
+        $self->{ua} = LWP::UserAgent->new(agent => "$class/$VERSION");
     }
 
-    return bless { ua => $ua }, $class;
+    return $self;
 }
 
 sub ua {
