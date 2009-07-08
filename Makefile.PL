@@ -12,7 +12,7 @@ WriteMakefile(
         'JSON'           => 2.0,
         'LWP::UserAgent' => 0,
         'Test::More'     => 0,
-        'URI'            => 0,
+        'URI'            => 1.36,
     },
     (eval { ExtUtils::MakeMaker->VERSION(6.46) } ? (
         META_MERGE => {
