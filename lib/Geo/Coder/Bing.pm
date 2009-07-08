@@ -15,10 +15,10 @@ sub new {
 
     my $ua = delete $params{ua};
     unless (ref $ua and $ua->isa(q(LWP::UserAgent))) {
-        $ua = LWP::UserAgent->new(agent => __PACKAGE__ . "/$VERSION"),
+        $ua = LWP::UserAgent->new(agent => "$class/$VERSION"),
     }
 
-    return bless { ua => $ua };
+    return bless { ua => $ua }, $class;
 }
 
 sub ua {
@@ -224,8 +224,8 @@ L<http://search.cpan.org/dist/Geo-Coder-Bing>
 
 Copyright (C) 2009 gray <gray at cpan.org>, all rights reserved.
 
-This library is free software; you can redistribute it and/or modify it under
-the same terms as Perl itself.
+This library is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
 
 =head1 AUTHOR
 
