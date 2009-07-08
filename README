@@ -19,6 +19,7 @@ This module requires these other modules and libraries:
     JSON
     LWP::UserAgent
     Test::More
+    URI
 
 COPYRIGHT AND LICENCE
 
