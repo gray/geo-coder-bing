@@ -172,6 +172,9 @@ Each location result is a hashref; a typical example looks like:
         'Name' => 'Hollywood Blvd & N Highland Ave, Los Angeles, CA 90028'
     }
 
+If the location contains non-ASCII characters, ensure it is a Unicode-
+flagged string or consists of UTF-8 bytes.
+
 =head2 ua
 
     $ua = $geocoder->ua()
