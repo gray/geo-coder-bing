@@ -6,7 +6,9 @@ MANIFEST			This list of files
 README
 t/00_compile.t
 t/01_new.t
-xt/author/kwalitee.t
-xt/author/live.t
-xt/author/pod.t
-xt/author/pod_coverage.t
+xt/kwalitee.t
+xt/live.t
+xt/perlcritic.t
+xt/perlcriticrc
+xt/pod.t
+xt/pod_coverage.t
