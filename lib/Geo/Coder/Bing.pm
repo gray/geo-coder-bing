@@ -65,6 +65,7 @@ sub geocode {
     return unless $location;
 
     my $uri = ($URI ||= _construct_uri)->clone;
+    # Note: the quotes around the location parameter are required.
     $uri->query_form(query => qq("$location"), $uri->query_form);
 
     my $res = $self->ua->get($uri);
