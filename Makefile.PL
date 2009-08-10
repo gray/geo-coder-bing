@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use ExtUtils::MakeMaker;
 
-WriteMakefile(
+my %conf = (
     NAME          => 'Geo::Coder::Bing',
     AUTHOR        => 'gray <gray@cpan.org>',
     LICENSE       => 'perl',
@@ -14,16 +14,20 @@ WriteMakefile(
         'Test::More'     => 0,
         'URI'            => 1.36,
     },
-    (eval { ExtUtils::MakeMaker->VERSION(6.46) } ? (
-        META_MERGE => {
-            resources  => {
-                repository => 'http://github.com/gray/geo-coder-bing',
-            },
-            recommends => {
-                'JSON::XS' => 2.0,
-            },
-        }
-    ) : () ),
+    META_MERGE    => {
+        resources  => {
+            repository => 'http://github.com/gray/geo-coder-bing',
+        },
+        recommends => {
+            'JSON::XS' => 2.0,
+        },
+    },
     dist          => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean         => { FILES => 'Geo-Coder-Bing-*' },
 );
+
+unless (eval { ExtUtils::MakeMaker->VERSION(6.46) }) {
+    delete $conf{META_MERGE};
+}
+
+WriteMakefile(%conf);
