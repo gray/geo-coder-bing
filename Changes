@@ -1,5 +1,11 @@
 Revision history for Geo-Coder-Bing
 
+0.04  Fri Sep 18 02:13:44 UTC 2009
+    - Added file portability author test.
+    - Renamed files for better portability.
+    - Added authortest Makefile target and added it to the disttest target.
+    - Added git ignore file.
+
 0.03  Wed Jul 8 14:42:46 UTC 2009
     - Specified a minimum required version for URI.
     - Added a note about non-ASCII locations.

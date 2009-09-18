@@ -1,4 +1,3 @@
-.perlcriticrc
 Changes
 ex/custom-useragent.pl
 lib/Geo/Coder/Bing.pm
@@ -10,5 +9,7 @@ t/01_new.t
 xt/kwalitee.t
 xt/live.t
 xt/perlcritic.t
+xt/perlcriticrc
 xt/pod.t
 xt/pod_coverage.t
+xt/portability_filenames.t
