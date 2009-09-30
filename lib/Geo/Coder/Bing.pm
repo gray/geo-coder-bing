@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Carp qw(croak);
+use Encode ();
 use JSON;
 use LWP::UserAgent;
 use URI;
@@ -65,6 +66,8 @@ sub geocode {
     my $location = @_ % 2 ? $_[0] : $_[0] eq 'location' ? $_[1] : '';
     return unless $location;
 
+    $location = Encode::encode('utf-8', $location);
+
     my $uri = ($URI ||= _construct_uri)->clone;
     # Note: the quotes around the location parameter are required.
     $uri->query_form(query => qq("$location"), $uri->query_form);
@@ -72,7 +75,7 @@ sub geocode {
     my $res = $self->ua->get($uri);
     return unless $res->is_success;
 
-    my $data = eval { decode_json($res->decoded_content) };
+    my $data = eval { from_json($res->decoded_content) };
     return unless $data;
 
     my @results = @{ $data->{Results} || [] };
@@ -118,8 +121,8 @@ object.
     $location = $geocoder->geocode(location => $location)
     @locations = $geocoder->geocode(location => $location)
 
-In scalar context, this method returns the first location result; and
-in list context it returns all locations results.
+In scalar context, this method returns the first location result; and in
+list context it returns all locations results.
 
 Each location result is a hashref; a typical example looks like:
 
@@ -173,9 +176,6 @@ Each location result is a hashref; a typical example looks like:
         'MatchConfidence' => 0,
         'Name' => 'Hollywood Blvd & N Highland Ave, Los Angeles, CA 90028'
     }
-
-If the location contains non-ASCII characters, ensure it is a Unicode-
-flagged string or consists of UTF-8 bytes.
 
 =head2 ua
 
