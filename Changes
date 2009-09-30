@@ -1,10 +1,13 @@
 Revision history for Geo-Coder-Bing
 
+0.05  Wed Sep 30 12:53:25 UTC 2009
+    - RT #47688: Location is no longer limited to only unicode-flagged strings
+      or UTF-8 bytes.
+
 0.04  Fri Sep 18 02:13:44 UTC 2009
     - Added file portability author test.
     - Renamed files for better portability.
     - Added authortest Makefile target and added it to the disttest target.
-    - Added git ignore file.
 
 0.03  Wed Jul 8 14:42:46 UTC 2009
     - Specified a minimum required version for URI.
