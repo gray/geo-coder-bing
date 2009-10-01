@@ -188,7 +188,8 @@ Accessor for the UserAgent object.
 
 L<http://www.microsoft.com/maps/isdk/ajax/>
 
-L<Geo::Coder::Google>, L<Geo::Coder::Yahoo>
+L<Geo::Coder::Google>, L<Geo::Coder::Mapquest>, L<Geo::Coder::Multimap>,
+L<Geo::Coder::Yahoo>
 
 =head1 REQUESTS AND BUGS
 
