@@ -16,6 +16,7 @@ DEPENDENCIES
 
 This module requires these other modules and libraries:
 
+    Encode
     JSON
     LWP::UserAgent
     Test::More
