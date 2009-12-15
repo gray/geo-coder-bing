@@ -4,7 +4,12 @@ use Encode;
 use Geo::Coder::Bing;
 use Test::More tests => 8;
 
-my $geocoder = Geo::Coder::Bing->new;
+my $debug = $ENV{GEO_CODER_BING_DEBUG};
+unless ($debug) {
+    diag "Set GEO_CODER_BING_DEBUG to see request/response data";
+}
+
+my $geocoder = Geo::Coder::Bing->new(debug => $debug);
 {
     my $address = 'Hollywood & Highland, Los Angeles, CA';
     my $location = $geocoder->geocode($address);

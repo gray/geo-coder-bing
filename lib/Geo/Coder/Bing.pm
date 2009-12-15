@@ -24,6 +24,12 @@ sub new {
         $self->{ua} = LWP::UserAgent->new(agent => "$class/$VERSION");
     }
 
+    if ($params{debug}) {
+        my $dump_sub = sub { shift->dump(maxlength => 0); return };
+        $self->ua->add_handler(request_send  => $dump_sub);
+        $self->ua->add_handler(response_done => $dump_sub);
+    }
+
     return $self;
 }
 
@@ -63,7 +69,7 @@ sub _construct_uri {
 sub geocode {
     my $self = shift;
 
-    my $location = @_ % 2 ? $_[0] : $_[0] eq 'location' ? $_[1] : '';
+    my $location = @_ % 2 ? $_[0] : 'location' eq $_[0] ? $_[1] : '';
     return unless $location;
 
     $location = Encode::encode('utf-8', $location);
