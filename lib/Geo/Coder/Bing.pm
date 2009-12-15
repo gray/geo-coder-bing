@@ -81,10 +81,16 @@ sub geocode {
     my $res = $self->ua->get($uri);
     return unless $res->is_success;
 
-    my $data = eval { from_json($res->decoded_content) };
+    my $content = $res->decoded_content;
+    return unless $content;
+
+    # Workaround invalid data.
+    $content =~ s[ \}\.d $ ][}]x;
+
+    my $data = eval { from_json($content) };
     return unless $data;
 
-    my @results = @{ $data->{Results} || [] };
+    my @results = @{ $data->{d}{Results} || [] };
     return wantarray ? @results : $results[0];
 }
 
