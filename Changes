@@ -1,5 +1,8 @@
 Revision history for Geo-Coder-Bing
 
+0.07  Wed May 5 15:35:36 UTC 2010
+    - RT #57149: Properly decoded character encoding of response.
+
 0.06  Tue Dec 15 07:06:22 UTC 2009
     - RT #52769: Added fix for changes to returned JSON data.
     - Added debug option for HTTP requests and responses.

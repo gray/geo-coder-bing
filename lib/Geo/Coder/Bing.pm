@@ -9,7 +9,7 @@ use JSON;
 use LWP::UserAgent;
 use URI;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 $VERSION = eval $VERSION;
 
 sub new {
@@ -80,6 +80,10 @@ sub geocode {
 
     my $res = $self->ua->get($uri);
     return unless $res->is_success;
+
+    # Change the content type of the response from 'application/json' so
+    # HTTP::Message will decode the character encoding.
+    $res->content_type('text/plain');
 
     my $content = $res->decoded_content;
     return unless $content;

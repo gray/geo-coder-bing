@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Encode;
 use Geo::Coder::Bing;
-use Test::More tests => 8;
+use Test::More tests => 9;
 
 my $debug = $ENV{GEO_CODER_BING_DEBUG};
 unless ($debug) {
@@ -39,4 +39,13 @@ my $geocoder = Geo::Coder::Bing->new(debug => $debug);
     );
     ok($location, 'UTF-8 bytes');
     is($location->{Address}{CountryRegion}, 'France', 'UTF-8 bytes');
+}
+{
+    my $address = decode('latin1', qq(Schm\xF6ckwitz, Berlin, Germany));
+
+    my $location = $geocoder->geocode($address);
+    is(
+        $location->{Address}{FormattedAddress}, $address,
+        'decoded character encoding of response'
+    );
 }
