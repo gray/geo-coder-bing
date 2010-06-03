@@ -42,10 +42,11 @@ my $geocoder = Geo::Coder::Bing->new(debug => $debug);
 }
 {
     my $address = decode('latin1', qq(Schm\xF6ckwitz, Berlin, Germany));
+    my $expected = decode('latin1', qq(Schm\xF6ckwitz, BE, Germany));
 
     my $location = $geocoder->geocode($address);
     is(
-        $location->{Address}{FormattedAddress}, $address,
+        $location->{Address}{FormattedAddress}, $expected,
         'decoded character encoding of response'
     );
 }
