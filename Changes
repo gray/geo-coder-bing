@@ -1,5 +1,10 @@
 Revision history for Geo-Coder-Bing
 
+0.08  Tue Jun 15 11:32:54 UTC 2010
+    - Migrated from the AJAX API to the new REST API.
+    - Maintained backwards compatibility, but issued a warning to encourage
+      users to migrate.
+
 0.07  Wed May 5 15:35:36 UTC 2010
     - RT #57149: Properly decoded character encoding of response.
 
@@ -8,8 +13,8 @@ Revision history for Geo-Coder-Bing
     - Added debug option for HTTP requests and responses.
 
 0.05  Wed Sep 30 12:53:25 UTC 2009
-    - RT #47688: Location is no longer limited to only unicode-flagged strings
-      or UTF-8 bytes.
+    - RT #47688: Location is no longer limited to only unicode-flagged
+      strings or UTF-8 bytes.
 
 0.04  Fri Sep 18 02:13:44 UTC 2009
     - Added file portability author test.
@@ -24,7 +29,7 @@ Revision history for Geo-Coder-Bing
     - Fixed prereqs.
     - Added example for custom useragent.
     - Added live tests (for author).
-    - Moved author tests into separate directory.    
+    - Moved author tests into separate directory.
 
 0.01  Mon Jul 6 10:07:59 UTC 2009
     - Initial distribution.

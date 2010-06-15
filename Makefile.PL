@@ -12,7 +12,7 @@ my %conf = (
         'Encode'         => 0,
         'JSON'           => 2.0,
         'LWP::UserAgent' => 0,
-        'Test::More'     => 0,
+        'Test::More'     => 0.82,
         'URI'            => 1.36,
     },
     META_MERGE    => {

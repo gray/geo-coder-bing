@@ -2,14 +2,74 @@ use strict;
 use warnings;
 use Encode;
 use Geo::Coder::Bing;
-use Test::More tests => 9;
+use Test::More;
+
+unless ($ENV{BING_MAPS_KEY}) {
+    plan skip_all => 'BING_MAPS_KEY environment variable must be set';
+}
+else {
+    plan tests => 18;
+}
 
 my $debug = $ENV{GEO_CODER_BING_DEBUG};
 unless ($debug) {
     diag "Set GEO_CODER_BING_DEBUG to see request/response data";
 }
 
-my $geocoder = Geo::Coder::Bing->new(debug => $debug);
+diag "";
+diag "Testing the REST API geocoder";
+print "*" x 75, "\n";
+
+my $geocoder = Geo::Coder::Bing->new(
+    key   => $ENV{BING_MAPS_KEY},
+    debug => $debug
+);
+{
+    my $address = 'Hollywood & Highland, Los Angeles, CA';
+    my $location = $geocoder->geocode($address);
+    is(
+        $location->{address}{postalCode},
+        90028,
+        "correct zip code for $address"
+    );
+}
+{
+    my @locations = $geocoder->geocode('Main Street');
+    ok(@locations > 1, 'there are many Main Streets');
+}
+{
+    my $address = qq(Ch\xE2teau d Uss\xE9, 37420, FR);
+
+    my $location = $geocoder->geocode($address);
+    ok($location, 'latin1 bytes');
+    is($location->{address}{countryRegion}, 'France', 'latin1 bytes');
+
+    $location = $geocoder->geocode(decode('latin1', $address));
+    ok($location, 'UTF-8 characters');
+    is($location->{address}{countryRegion}, 'France', 'UTF-8 characters');
+
+    $location = $geocoder->geocode(
+        encode('utf-8', decode('latin1', $address))
+    );
+    ok($location, 'UTF-8 bytes');
+    is($location->{address}{countryRegion}, 'France', 'UTF-8 bytes');
+}
+{
+    my $address = decode('latin1', qq(Schm\xF6ckwitz, Berlin, Germany));
+    my $expected = decode('latin1', qq(Schm\xF6ckwitz, BE, Germany));
+
+    my $location = $geocoder->geocode($address);
+    is(
+        $location->{address}{formattedAddress}, $expected,
+        'decoded character encoding of response'
+    );
+}
+
+diag "";
+diag "Testing the AJAX API geocoder";
+print "*" x 75, "\n";
+
+$geocoder = Geo::Coder::Bing->new(debug => $debug);
 {
     my $address = 'Hollywood & Highland, Los Angeles, CA';
     my $location = $geocoder->geocode($address);

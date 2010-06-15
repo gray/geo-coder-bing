@@ -3,19 +3,25 @@ package Geo::Coder::Bing;
 use strict;
 use warnings;
 
-use Carp qw(croak);
+use Carp qw(carp croak);
 use Encode ();
 use JSON;
 use LWP::UserAgent;
 use URI;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 $VERSION = eval $VERSION;
 
 sub new {
-    my ($class, %params) = @_;
+    my ($class, @params) = @_;
+    my %params = (@params % 2) ? (key => @params) : @params;
 
-    my $self = bless {}, $class;
+    my $key = $params{key};
+    unless ($key) {
+        carp 'Provide a Bing Maps key to use the new REST API';
+    }
+
+    my $self = bless { key => $key }, $class;
 
     if ($params{ua}) {
         $self->ua($params{ua});
@@ -25,10 +31,12 @@ sub new {
     }
 
     if ($params{debug}) {
-        my $dump_sub = sub { shift->dump(maxlength => 0); return };
-        $self->ua->add_handler(request_send  => $dump_sub);
-        $self->ua->add_handler(response_done => $dump_sub);
+        my $dump_sub = sub { $_[0]->dump(maxlength => 0); return };
+        $self->ua->set_my_handler(request_send  => $dump_sub);
+        $self->ua->set_my_handler(response_done => $dump_sub);
     }
+
+    # TODO: accept 'secure' or 'ssl' parameter.
 
     return $self;
 }
@@ -43,17 +51,60 @@ sub ua {
     return $self->{ua};
 }
 
-my $URI;
+sub geocode {
+    return $_[0]->{key} ? &_geocode_rest : &_geocode_ajax;
+}
 
-sub _construct_uri {
-    return $URI if $URI;
+sub _geocode_rest {
+    my $self = shift;
 
-    $URI = URI->new('http://dev.virtualearth.net/');
-    $URI->path_segments(qw(
+    my %params   = (@_ % 2) ? (location => @_) : @_;
+    my $location = $params{location} or return;
+
+    $location = Encode::encode('utf-8', $location);
+
+    my $uri = URI->new('http://dev.virtualearth.net/REST/v1/Locations');
+    $uri->query_form(
+        key => $self->{key},
+        q   => $location,
+    );
+
+    my $res = $self->ua->get($uri);
+    return unless $res->is_success;
+
+    # Change the content type of the response from 'application/json' so
+    # HTTP::Message will decode the character encoding.
+    $res->content_type('text/plain');
+
+    my $content = $res->decoded_content;
+    return unless $content;
+
+    my $data = eval { from_json($content) };
+    return unless $data;
+
+    my @results = @{ $data->{resourceSets}[0]{resources} || [] };
+    return wantarray ? @results : $results[0];
+}
+
+# Support AJAX API for backwards compatibility.
+
+sub _geocode_ajax {
+    my $self = shift;
+
+    my $location = @_ % 2 ? $_[0] : 'location' eq $_[0] ? $_[1] : '';
+    return unless $location;
+
+    $location = Encode::encode('utf-8', $location);
+
+    my $uri = URI->new('http://dev.virtualearth.net/');
+    $uri->path_segments(qw(
         services v1 geocodeservice geocodeservice.asmx Geocode
     ));
-    $URI->query_form(
+    $uri->query_form(
         format => 'json',
+
+        # Note: the quotes around the location parameter are required.
+        query  => qq("$location"),
 
         # These are all required, even if empty.
         map { $_ => '' } qw(
@@ -62,21 +113,6 @@ sub _construct_uri {
             locality mapBounds postalCode postalTown rankBy
         ),
     );
-
-    return $URI;
-}
-
-sub geocode {
-    my $self = shift;
-
-    my $location = @_ % 2 ? $_[0] : 'location' eq $_[0] ? $_[1] : '';
-    return unless $location;
-
-    $location = Encode::encode('utf-8', $location);
-
-    my $uri = ($URI ||= _construct_uri)->clone;
-    # Note: the quotes around the location parameter are required.
-    $uri->query_form(query => qq("$location"), $uri->query_form);
 
     my $res = $self->ua->get($uri);
     return unless $res->is_success;
@@ -111,7 +147,7 @@ Geo::Coder::Bing - Geocode addresses with the Bing Maps API
 
     use Geo::Coder::Bing;
 
-    my $geocoder = Geo::Coder::Bing->new;
+    my $geocoder = Geo::Coder::Bing->new(key => 'Your Bing Maps key');
     my $location = $geocoder->geocode(
         location => 'Hollywood and Highland, Los Angeles, CA'
     );
@@ -119,15 +155,18 @@ Geo::Coder::Bing - Geocode addresses with the Bing Maps API
 =head1 DESCRIPTION
 
 The C<Geo::Coder::Bing> module provides an interface to the Bing Maps
-geocoding service, via the Ajax API.
+geocoding service.
 
 =head1 METHODS
 
 =head2 new
 
-    $geocoder = Geo::Coder::Bing->new()
+    $geocoder = Geo::Coder::Bing->new('Your Bing Maps key')
 
 Creates a new geocoding object.
+
+A Bing Maps key can be obtained here:
+L<http://msdn.microsoft.com/en-us/library/ff428642.aspx>.
 
 Accepts an optional B<ua> parameter for passing in a custom LWP::UserAgent
 object.
@@ -143,54 +182,28 @@ list context it returns all locations results.
 Each location result is a hashref; a typical example looks like:
 
     {
-        'BestLocation' => {
-            'Precision'   => 0,
-            'Coordinates' => {
-                'Longitude' => '-118.338669106725',
-                'Latitude'  => '34.1015635823646'
-            }
+        __type =>
+            "Location:http://schemas.microsoft.com/search/local/ws/rest/v1",
+        address => {
+            addressLine   => "Hollywood Blvd & N Highland Ave",
+            adminDistrict => "CA",
+            countryRegion => "United States",
+            formattedAddress =>
+                "Hollywood Blvd & N Highland Ave, Los Angeles, CA 90028",
+            locality   => "Los Angeles",
+            postalCode => 90028,
         },
-        'Locations' => [
-            {
-                'Precision'   => 0,
-                'Coordinates' => {
-                    'Longitude' => '-118.338669106725',
-                    'Latitude'  => '34.1015635823646'
-                }
-            }
+        bbox => [
+            "34.0977008647939", "-118.344888641665",
+            "34.1054262999352", "-118.332449571785",
         ],
-        'CountryRegion' => 244,
-        'Address'       => {
-            'PostalCode'    => '90028',
-            'CountryRegion' => 'United States',
-            'AdminDistrict' => 'CA',
-            'FormattedAddress' =>
-                'Hollywood Blvd & N Highland Ave, Los Angeles, CA 90028',
-            'Locality'    => 'Los Angeles',
-            'AddressLine' => 'Hollywood Blvd & N Highland Ave',
-            'PostalTown'  => '',
-            'District'    => ''
+        confidence => "High",
+        entityType => "RoadIntersection",
+        name  => "Hollywood Blvd & N Highland Ave, Los Angeles, CA 90028",
+        point => {
+            coordinates => [ "34.1015635823646", "-118.338669106725" ],
+            type        => "Point",
         },
-        'MatchCode' => 1,
-        'Type'      => 155,
-        'Shape'     => undef,
-        'BestView'  => {
-            'Type'            => 0,
-            'NorthEastCorner' => {
-                'Longitude' => '-118.323121333557',
-                'Latitude'  => '34.1112203763297'
-            },
-            'SouthWestCorner' => {
-                'Longitude' => '-118.354216879894',
-                'Latitude'  => '34.0919067883995'
-            },
-            'Center'          => {
-                'Longitude' => '-118.338669106725',
-                'Latitude'  => '34.1015641333754'
-            }
-        },
-        'MatchConfidence' => 0,
-        'Name' => 'Hollywood Blvd & N Highland Ave, Los Angeles, CA 90028'
     }
 
 =head2 ua
@@ -200,9 +213,17 @@ Each location result is a hashref; a typical example looks like:
 
 Accessor for the UserAgent object.
 
+=head1 NOTES
+
+Starting with version 0.08, this module uses the REST API instead of the
+AJAX API. Backwards compatibility has been maintained, but its usage by this
+module is now deprecated, hence a warning is issued when a key is not
+provided to the constructor. Also note that the structure of the data
+returned from both APIs differs slightly.
+
 =head1 SEE ALSO
 
-L<http://www.microsoft.com/maps/isdk/ajax/>
+L<http://msdn.microsoft.com/en-us/library/ff701713.aspx>
 
 L<Geo::Coder::Google>, L<Geo::Coder::Mapquest>, L<Geo::Coder::Multimap>,
 L<Geo::Coder::Yahoo>
@@ -248,7 +269,7 @@ L<http://search.cpan.org/dist/Geo-Coder-Bing>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2009 gray <gray at cpan.org>, all rights reserved.
+Copyright (C) 2009-2010 gray <gray at cpan.org>, all rights reserved.
 
 This library is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

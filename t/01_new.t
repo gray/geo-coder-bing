@@ -1,8 +1,11 @@
 use strict;
 use warnings;
-use Test::More tests => 2;
+use Test::More tests => 5;
 use Geo::Coder::Bing;
 
-my $geo = Geo::Coder::Bing->new;
-isa_ok($geo, 'Geo::Coder::Bing', 'new');
+new_ok('Geo::Coder::Bing' => ['Your Bing Maps key']);
+new_ok('Geo::Coder::Bing' => ['Your Bing Maps key', debug => 1]);
+new_ok('Geo::Coder::Bing' => [key => 'Your Bing Maps key']);
+new_ok('Geo::Coder::Bing' => [key => 'Your Bing Maps key', debug => 1]);
+
 can_ok('Geo::Coder::Bing', qw(geocode ua));
