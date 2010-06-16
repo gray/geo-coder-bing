@@ -9,7 +9,7 @@ use JSON;
 use LWP::UserAgent;
 use URI;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 $VERSION = eval $VERSION;
 
 sub new {
@@ -36,7 +36,13 @@ sub new {
         $self->ua->set_my_handler(response_done => $dump_sub);
     }
 
-    # TODO: accept 'secure' or 'ssl' parameter.
+    if ($params{https}) {
+        eval { require Crypt::SSLeay; 1 } or
+        eval { require IO::Socket::SSL; 1 } or
+        croak q('https' requires Crypt::SSLeay or IO::Socket::SSL);
+
+        $self->{https} = 1;
+    }
 
     return $self;
 }
@@ -56,14 +62,14 @@ sub geocode {
 }
 
 sub _geocode_rest {
-    my $self = shift;
+    my ($self, @params) = @_;
+    my %params = (@params % 2) ? (location => @params) : @params;
 
-    my %params   = (@_ % 2) ? (location => @_) : @_;
     my $location = $params{location} or return;
-
     $location = Encode::encode('utf-8', $location);
 
-    my $uri = URI->new('http://dev.virtualearth.net/REST/v1/Locations');
+    my $proto = $self->{https} ? 'https' : 'http';
+    my $uri = URI->new("$proto://dev.virtualearth.net/REST/v1/Locations");
     $uri->query_form(
         key => $self->{key},
         q   => $location,
@@ -89,14 +95,14 @@ sub _geocode_rest {
 # Support AJAX API for backwards compatibility.
 
 sub _geocode_ajax {
-    my $self = shift;
+    my ($self, @params) = @_;
+    my %params = (@params % 2) ? (location => @params) : @params;
 
-    my $location = @_ % 2 ? $_[0] : 'location' eq $_[0] ? $_[1] : '';
-    return unless $location;
-
+    my $location = $params{location} or return;
     $location = Encode::encode('utf-8', $location);
 
-    my $uri = URI->new('http://dev.virtualearth.net/');
+    my $proto = $self->{https} ? 'https' : 'http';
+    my $uri = URI->new("$proto://dev.virtualearth.net/");
     $uri->path_segments(qw(
         services v1 geocodeservice geocodeservice.asmx Geocode
     ));
@@ -162,11 +168,17 @@ geocoding service.
 =head2 new
 
     $geocoder = Geo::Coder::Bing->new('Your Bing Maps key')
+    $geocoder = Geo::Coder::Bing->new(
+        key   => 'Your Bing Maps key',
+        https => 1,
+    )
 
 Creates a new geocoding object.
 
 A Bing Maps key can be obtained here:
 L<http://msdn.microsoft.com/en-us/library/ff428642.aspx>.
+
+Accepts an optional B<https> parameter for securing network traffic.
 
 Accepts an optional B<ua> parameter for passing in a custom LWP::UserAgent
 object.

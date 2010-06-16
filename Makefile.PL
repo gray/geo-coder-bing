@@ -2,6 +2,11 @@ use strict;
 use warnings;
 use ExtUtils::MakeMaker;
 
+my @recommends;
+unless (eval { require IO::Socket::SSL; 1 }) {
+    push @recommends, 'Crypt::SSLeay' => 0;
+}
+
 my %conf = (
     NAME          => 'Geo::Coder::Bing',
     AUTHOR        => 'gray <gray@cpan.org>',
@@ -21,6 +26,7 @@ my %conf = (
         },
         recommends => {
             'JSON::XS' => 2.0,
+            @recommends,
         },
     },
     dist          => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

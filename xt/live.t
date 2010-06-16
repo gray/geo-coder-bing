@@ -8,13 +8,16 @@ unless ($ENV{BING_MAPS_KEY}) {
     plan skip_all => 'BING_MAPS_KEY environment variable must be set';
 }
 else {
-    plan tests => 18;
+    plan tests => 20;
 }
 
 my $debug = $ENV{GEO_CODER_BING_DEBUG};
 unless ($debug) {
     diag "Set GEO_CODER_BING_DEBUG to see request/response data";
 }
+
+my $has_ssl = eval { require Crypt::SSLeay; 1 } or
+    eval { require IO::Socket::SSL; 1 };
 
 diag "";
 diag "Testing the REST API geocoder";
@@ -65,11 +68,28 @@ my $geocoder = Geo::Coder::Bing->new(
     );
 }
 
+SKIP: {
+    skip 'no SSL support', 1 unless $has_ssl;
+
+    $geocoder = Geo::Coder::Bing->new(
+        key   => $ENV{BING_MAPS_KEY},
+        debug => $debug
+    );
+    my $address  = 'Hollywood & Highland, Los Angeles, CA';
+    my $location = $geocoder->geocode($address);
+    is($location->{address}{postalCode}, 90028, 'https');
+}
+
 diag "";
 diag "Testing the AJAX API geocoder";
 print "*" x 75, "\n";
 
-$geocoder = Geo::Coder::Bing->new(debug => $debug);
+$geocoder = eval {
+    # Silence the missing key warning.
+    local $SIG{'__WARN__'} = sub { };
+
+    Geo::Coder::Bing->new(debug => $debug);
+};
 {
     my $address = 'Hollywood & Highland, Los Angeles, CA';
     my $location = $geocoder->geocode($address);
@@ -109,4 +129,21 @@ $geocoder = Geo::Coder::Bing->new(debug => $debug);
         $location->{Address}{FormattedAddress}, $expected,
         'decoded character encoding of response'
     );
+}
+
+SKIP: {
+    skip 'no SSL support', 1 unless $has_ssl;
+
+    $geocoder = eval {
+        # Silence the missing key warning.
+        local $SIG{'__WARN__'} = sub { };
+
+        Geo::Coder::Bing->new(
+            https => 1,
+            debug => $debug
+        );
+    };
+    my $address  = 'Hollywood & Highland, Los Angeles, CA';
+    my $location = $geocoder->geocode($address);
+    is($location->{Address}{PostalCode}, 90028, 'https');
 }
