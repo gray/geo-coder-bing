@@ -25,7 +25,8 @@ my %conf = (
             repository => 'http://github.com/gray/geo-coder-bing',
         },
         recommends => {
-            'JSON::XS' => 2.0,
+            'JSON::XS'   => 2.0,
+            'Net::HTTPS' => 0,
             @recommends,
         },
     },

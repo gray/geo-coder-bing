@@ -37,9 +37,8 @@ sub new {
     }
 
     if ($params{https}) {
-        eval { require Crypt::SSLeay; 1 } or
-        eval { require IO::Socket::SSL; 1 } or
-        croak q('https' requires Crypt::SSLeay or IO::Socket::SSL);
+        croak q('https' requires Crypt::SSLeay or IO::Socket::SSL)
+            unless eval { require Net::HTTPS; 1 };
 
         $self->{https} = 1;
     }
