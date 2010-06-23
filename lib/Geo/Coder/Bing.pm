@@ -9,19 +9,17 @@ use JSON;
 use LWP::UserAgent;
 use URI;
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 $VERSION = eval $VERSION;
 
 sub new {
     my ($class, @params) = @_;
     my %params = (@params % 2) ? (key => @params) : @params;
 
-    my $key = $params{key};
-    unless ($key) {
-        carp 'Provide a Bing Maps key to use the new REST API';
-    }
+    carp 'Provide a Bing Maps key to use the new REST API'
+        unless $params{key};
 
-    my $self = bless { key => $key }, $class;
+    my $self = bless \ %params, $class;
 
     if ($params{ua}) {
         $self->ua($params{ua});
@@ -30,17 +28,18 @@ sub new {
         $self->{ua} = LWP::UserAgent->new(agent => "$class/$VERSION");
     }
 
-    if ($params{debug}) {
+    if ($self->{debug}) {
         my $dump_sub = sub { $_[0]->dump(maxlength => 0); return };
         $self->ua->set_my_handler(request_send  => $dump_sub);
         $self->ua->set_my_handler(response_done => $dump_sub);
     }
 
-    if ($params{https}) {
-        croak q('https' requires Crypt::SSLeay or IO::Socket::SSL)
-            unless eval { require Net::HTTPS; 1 };
+    $self->{compress} = 1 unless exists $self->{compress};
+    $self->ua->default_header(accept_encoding => 'gzip,deflate')
+        if $self->{compress};
 
-        $self->{https} = 1;
+    if ($self->{https} and not $self->ua->is_protocol_supported('https')) {
+        croak q('https' requires Crypt::SSLeay or IO::Socket::SSL)
     }
 
     return $self;
@@ -67,14 +66,14 @@ sub _geocode_rest {
     my $location = $params{location} or return;
     $location = Encode::encode('utf-8', $location);
 
-    my $proto = $self->{https} ? 'https' : 'http';
-    my $uri = URI->new("$proto://dev.virtualearth.net/REST/v1/Locations");
+    my $uri = URI->new('http://dev.virtualearth.net/REST/v1/Locations');
+    $uri->scheme('https') if $self->{https};
     $uri->query_form(
         key => $self->{key},
         q   => $location,
     );
 
-    my $res = $self->ua->get($uri);
+    my $res = $self->{response} = $self->ua->get($uri);
     return unless $res->is_success;
 
     # Change the content type of the response from 'application/json' so
@@ -100,8 +99,8 @@ sub _geocode_ajax {
     my $location = $params{location} or return;
     $location = Encode::encode('utf-8', $location);
 
-    my $proto = $self->{https} ? 'https' : 'http';
-    my $uri = URI->new("$proto://dev.virtualearth.net/");
+    my $uri = URI->new('http://dev.virtualearth.net/');
+    $uri->scheme('https') if $self->{https};
     $uri->path_segments(qw(
         services v1 geocodeservice geocodeservice.asmx Geocode
     ));
@@ -119,7 +118,7 @@ sub _geocode_ajax {
         ),
     );
 
-    my $res = $self->ua->get($uri);
+    my $res = $self->{response} = $self->ua->get($uri);
     return unless $res->is_success;
 
     # Change the content type of the response from 'application/json' so
@@ -217,6 +216,13 @@ Each location result is a hashref; a typical example looks like:
         },
     }
 
+=head2 response
+
+    $response = $geocoder->response()
+
+Returns an L<HTTP::Response> object for the last submitted request. Can be
+used to determine the details of an error.
+
 =head2 ua
 
     $ua = $geocoder->ua()
@@ -236,8 +242,8 @@ returned from both APIs differs slightly.
 
 L<http://msdn.microsoft.com/en-us/library/ff701713.aspx>
 
-L<Geo::Coder::Google>, L<Geo::Coder::Mapquest>, L<Geo::Coder::Multimap>,
-L<Geo::Coder::Yahoo>
+L<Geo::Coder::Bing::Bulk>, L<Geo::Coder::Google>, L<Geo::Coder::Mapquest>,
+L<Geo::Coder::Multimap>, L<Geo::Coder::Yahoo>
 
 =head1 REQUESTS AND BUGS
 

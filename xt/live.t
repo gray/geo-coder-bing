@@ -72,6 +72,7 @@ SKIP: {
 
     $geocoder = Geo::Coder::Bing->new(
         key   => $ENV{BING_MAPS_KEY},
+        https => 1,
         debug => $debug
     );
     my $address  = 'Hollywood & Highland, Los Angeles, CA';
@@ -83,9 +84,9 @@ diag "";
 diag "Testing the AJAX API geocoder";
 print "*" x 75, "\n";
 
-$geocoder = eval {
+$geocoder = do {
     # Silence the missing key warning.
-    local $SIG{'__WARN__'} = sub { };
+    local $SIG{__WARN__} = sub { };
 
     Geo::Coder::Bing->new(debug => $debug);
 };
@@ -133,7 +134,7 @@ $geocoder = eval {
 SKIP: {
     skip 'no SSL support', 1 unless $has_ssl;
 
-    $geocoder = eval {
+    $geocoder = do {
         # Silence the missing key warning.
         local $SIG{'__WARN__'} = sub { };
 
