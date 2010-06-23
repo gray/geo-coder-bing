@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Encode;
 use Geo::Coder::Bing;
+use LWP::UserAgent;
 use Test::More;
 
 unless ($ENV{BING_MAPS_KEY}) {
@@ -16,7 +17,7 @@ unless ($debug) {
     diag "Set GEO_CODER_BING_DEBUG to see request/response data";
 }
 
-my $has_ssl = eval { require Net::HTTPS; 1 };
+my $has_ssl = LWP::UserAgent->is_protocol_supported('https');
 
 diag "";
 diag "Testing the REST API geocoder";
@@ -72,6 +73,7 @@ SKIP: {
 
     $geocoder = Geo::Coder::Bing->new(
         key   => $ENV{BING_MAPS_KEY},
+        https => 1,
         debug => $debug
     );
     my $address  = 'Hollywood & Highland, Los Angeles, CA';
@@ -83,9 +85,9 @@ diag "";
 diag "Testing the AJAX API geocoder";
 print "*" x 75, "\n";
 
-$geocoder = eval {
+$geocoder = do {
     # Silence the missing key warning.
-    local $SIG{'__WARN__'} = sub { };
+    local $SIG{__WARN__} = sub { };
 
     Geo::Coder::Bing->new(debug => $debug);
 };
@@ -133,7 +135,7 @@ $geocoder = eval {
 SKIP: {
     skip 'no SSL support', 1 unless $has_ssl;
 
-    $geocoder = eval {
+    $geocoder = do {
         # Silence the missing key warning.
         local $SIG{'__WARN__'} = sub { };
 

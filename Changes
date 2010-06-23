@@ -1,5 +1,10 @@
 Revision history for Geo-Coder-Bing
 
+0.10  Wed Jun 23 01:28:42 UTC 2010
+    - Enabled compressed responses by default.
+    - Added method to get the HTTP::Response for the last request.
+    - Added Pod reference to the new Geo::Coder::Bing::Bulk module.
+
 0.09  Wed Jun 16 16:20:39 UTC 2010
     - Added https option.
 
