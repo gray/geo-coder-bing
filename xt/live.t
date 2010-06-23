@@ -41,21 +41,21 @@ my $geocoder = Geo::Coder::Bing->new(
     ok(@locations > 1, 'there are many Main Streets');
 }
 {
-    my $address = qq(Ch\xE2teau d Uss\xE9, 37420, FR);
+    my $address = qq(Albrecht-Th\xE4r-Stra\xDFe 6, 48147 M\xFCnster, Germany);
 
     my $location = $geocoder->geocode($address);
     ok($location, 'latin1 bytes');
-    is($location->{address}{countryRegion}, 'France', 'latin1 bytes');
+    is($location->{address}{countryRegion}, 'Germany', 'latin1 bytes');
 
     $location = $geocoder->geocode(decode('latin1', $address));
     ok($location, 'UTF-8 characters');
-    is($location->{address}{countryRegion}, 'France', 'UTF-8 characters');
+    is($location->{address}{countryRegion}, 'Germany', 'UTF-8 characters');
 
     $location = $geocoder->geocode(
         encode('utf-8', decode('latin1', $address))
     );
     ok($location, 'UTF-8 bytes');
-    is($location->{address}{countryRegion}, 'France', 'UTF-8 bytes');
+    is($location->{address}{countryRegion}, 'Germany', 'UTF-8 bytes');
 }
 {
     my $address = decode('latin1', qq(Schm\xF6ckwitz, Berlin, Germany));
@@ -105,21 +105,21 @@ $geocoder = do {
     ok(@locations > 1, 'there are many Main Streets');
 }
 {
-    my $address = qq(Ch\xE2teau d Uss\xE9, 37420, FR);
+    my $address = qq(Albrecht-Th\xE4r-Stra\xDFe 6, 48147 M\xFCnster, Germany);
 
     my $location = $geocoder->geocode($address);
     ok($location, 'latin1 bytes');
-    is($location->{Address}{CountryRegion}, 'France', 'latin1 bytes');
+    is($location->{Address}{CountryRegion}, 'Germany', 'latin1 bytes');
 
     $location = $geocoder->geocode(decode('latin1', $address));
     ok($location, 'UTF-8 characters');
-    is($location->{Address}{CountryRegion}, 'France', 'UTF-8 characters');
+    is($location->{Address}{CountryRegion}, 'Germany', 'UTF-8 characters');
 
     $location = $geocoder->geocode(
         encode('utf-8', decode('latin1', $address))
     );
     ok($location, 'UTF-8 bytes');
-    is($location->{Address}{CountryRegion}, 'France', 'UTF-8 bytes');
+    is($location->{Address}{CountryRegion}, 'Germany', 'UTF-8 bytes');
 }
 {
     my $address = decode('latin1', qq(Schm\xF6ckwitz, Berlin, Germany));
