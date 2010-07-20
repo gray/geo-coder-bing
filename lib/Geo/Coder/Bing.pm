@@ -246,7 +246,7 @@ L<http://msdn.microsoft.com/en-us/library/ff701713.aspx>
 
 L<Geo::Coder::Bing::Bulk>, L<Geo::Coder::Google>, L<Geo::Coder::Mapquest>,
 L<Geo::Coder::Multimap>, L<Geo::Coder::Navteq>, L<Geo::Coder::OSM>,
-L<Geo::Coder::TomTom>, L<Geo::Coder::Yahoo>
+L<Geo::Coder::PlaceFinder>, L<Geo::Coder::TomTom>, L<Geo::Coder::Yahoo>
 
 =head1 REQUESTS AND BUGS
 
