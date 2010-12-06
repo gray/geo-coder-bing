@@ -283,7 +283,7 @@ L<http://rt.cpan.org/Public/Dist/Display.html?Name=Geo-Coder-Bing>
 
 =item * Search CPAN
 
-L<http://search.cpan.org/dist/Geo-Coder-Bing>
+L<http://search.cpan.org/dist/Geo-Coder-Bing/>
 
 =back
 
