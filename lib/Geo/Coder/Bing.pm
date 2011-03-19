@@ -33,10 +33,9 @@ sub new {
         $self->ua->set_my_handler(request_send  => $dump_sub);
         $self->ua->set_my_handler(response_done => $dump_sub);
     }
-
-    $self->{compress} = 1 unless exists $self->{compress};
-    $self->ua->default_header(accept_encoding => 'gzip,deflate')
-        if $self->{compress};
+    elsif ($self->{compress}) {
+        $self->ua->default_header(accept_encoding => 'gzip,deflate');
+    }
 
     if ($self->{https} and not $self->ua->is_protocol_supported('https')) {
         croak q('https' requires Crypt::SSLeay or IO::Socket::SSL)
