@@ -28,11 +28,11 @@ my $geocoder = Geo::Coder::Bing->new(
     debug => $debug
 );
 {
-    my $address = 'Hollywood & Highland, Los Angeles, CA';
+    my $address  = 'One Microsoft Way, Redmond, WA';
     my $location = $geocoder->geocode($address);
-    is(
+    like(
         $location->{address}{postalCode},
-        90028,
+        qr/^98052\b/,
         "correct zip code for $address"
     );
 }
@@ -76,9 +76,9 @@ SKIP: {
         https => 1,
         debug => $debug
     );
-    my $address  = 'Hollywood & Highland, Los Angeles, CA';
+    my $address  = 'One Microsoft Way, Redmond, WA';
     my $location = $geocoder->geocode($address);
-    is($location->{address}{postalCode}, 90028, 'https');
+    like($location->{address}{postalCode}, qr/^98052\b/, 'https');
 }
 
 diag "";
@@ -92,11 +92,11 @@ $geocoder = do {
     Geo::Coder::Bing->new(debug => $debug);
 };
 {
-    my $address = 'Hollywood & Highland, Los Angeles, CA';
+    my $address  = 'One Microsoft Way, Redmond, WA';
     my $location = $geocoder->geocode($address);
-    is(
+    like(
         $location->{Address}{PostalCode},
-        90028,
+        qr/^98052\b/,
         "correct zip code for $address"
     );
 }
@@ -144,7 +144,7 @@ SKIP: {
             debug => $debug
         );
     };
-    my $address  = 'Hollywood & Highland, Los Angeles, CA';
+    my $address = 'One Microsoft Way, Redmond, WA';
     my $location = $geocoder->geocode($address);
-    is($location->{Address}{PostalCode}, 90028, 'https');
+    like($location->{Address}{PostalCode}, qr/^98052\b/, 'https');
 }
