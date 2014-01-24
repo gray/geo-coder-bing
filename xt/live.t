@@ -68,6 +68,28 @@ my $geocoder = Geo::Coder::Bing->new(
     );
 }
 
+
+diag "";
+diag "Testing the include option";
+
+my $geocoder = Geo::Coder::Bing->new(
+    key   => $ENV{BING_MAPS_KEY},
+    debug => $debug,
+    incl  => 'ciso2,queryParse'
+);
+{
+    my $address  = 'One Microsoft Way, Redmond, WA';
+    my $location = $geocoder->geocode($address);
+    like(
+        $location->{address}{postalCode},
+        qr/^98052\b/,
+        "correct zip code for $address"
+    );
+    is($location->{address}{countryRegionIso2}, 'US', 'countryRegionIso2 present')
+    ok($location->{queryParseValues}, 'queryParseValues present')
+}
+
+
 SKIP: {
     skip 'no SSL support', 1 unless $has_ssl;
 
