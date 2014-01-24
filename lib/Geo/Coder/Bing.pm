@@ -68,7 +68,9 @@ sub _geocode_rest {
     $uri->query_form(
         key => $self->{key},
         q   => $location,
-        $self->{include} ? ( include => $self->{include} ) : (),
+                $self->{incl}   ? ( incl   => $self->{incl}   ) : (),
+                $self->{maxRes} ? ( maxRes => $self->{maxRes} ) : (),
+        defined $self->{inclnb} ? ( inclnb => $self->{inclnb} ) : (),
     );
 
     my $res = $self->{response} = $self->ua->get($uri);
@@ -166,9 +168,12 @@ geocoding service.
     $geocoder = Geo::Coder::Bing->new('Your Bing Maps key')
     $geocoder = Geo::Coder::Bing->new(
         key   => 'Your Bing Maps key',
-        # https   => 1,
-        # debug   => 1,
-        # include => ..., # passed as &include= in REST URL
+        # https  => 1,
+        # debug  => 1,
+        # passed to REST URL:
+        # incl   => ...,
+        # inclnb => ...,
+        # maxRes => ...,
     )
 
 Creates a new geocoding object.
