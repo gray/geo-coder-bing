@@ -9,7 +9,7 @@ unless ($ENV{BING_MAPS_KEY}) {
     plan skip_all => 'BING_MAPS_KEY environment variable must be set';
 }
 else {
-    plan tests => 20;
+    plan tests => 23;
 }
 
 my $debug = $ENV{GEO_CODER_BING_DEBUG};
@@ -72,7 +72,7 @@ my $geocoder = Geo::Coder::Bing->new(
 diag "";
 diag "Testing the include option";
 
-my $geocoder = Geo::Coder::Bing->new(
+$geocoder = Geo::Coder::Bing->new(
     key   => $ENV{BING_MAPS_KEY},
     debug => $debug,
     incl  => 'ciso2,queryParse'
@@ -85,8 +85,8 @@ my $geocoder = Geo::Coder::Bing->new(
         qr/^98052\b/,
         "correct zip code for $address"
     );
-    is($location->{address}{countryRegionIso2}, 'US', 'countryRegionIso2 present')
-    ok($location->{queryParseValues}, 'queryParseValues present')
+    is($location->{address}{countryRegionIso2}, 'US', 'countryRegionIso2 present');
+    ok($location->{queryParseValues}, 'queryParseValues present');
 }
 
 
