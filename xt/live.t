@@ -32,6 +32,10 @@ my $geocoder = Geo::Coder::Bing->new(
         qr/^98052\b/,
         "correct zip code for $address"
     );
+
+    $location = $geocoder->geocode($address, incl => 'ciso2,queryParse');
+    is($location->{address}{countryRegionIso2}, 'US', 'countryRegionIso2 param');
+    ok($location->{queryParseValues}, 'queryParseValues param');
 }
 {
     my @locations = $geocoder->geocode('Main Street');

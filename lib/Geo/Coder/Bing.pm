@@ -29,8 +29,9 @@ sub new {
         my $dump_sub = sub { $_[0]->dump(maxlength => 0); return };
         $self->ua->set_my_handler(request_send  => $dump_sub);
         $self->ua->set_my_handler(response_done => $dump_sub);
+        $self->{compress} ||= 0;
     }
-    elsif (exists $self->{compress} ? $self->{compress} : 1) {
+    if (exists $self->{compress} ? $self->{compress} : 1) {
         $self->ua->default_header(accept_encoding => 'gzip,deflate');
     }
 
@@ -60,14 +61,14 @@ sub _geocode_rest {
     my ($self, @params) = @_;
     my %params = (@params % 2) ? (location => @params) : @params;
 
-    my $location = $params{location} or return;
-    $location = Encode::encode('utf-8', $location);
+    $params{query} = delete $params{location} or return;
+    $_ = Encode::encode('utf-8', $_) for values %params;
 
     my $uri = URI->new('http://dev.virtualearth.net/REST/v1/Locations');
     $uri->scheme('https') if $self->{https};
     $uri->query_form(
         key => $self->{key},
-        q   => $location,
+        %params,
     );
 
     my $res = $self->{response} = $self->ua->get($uri);
@@ -86,6 +87,7 @@ sub _geocode_rest {
     my @results = @{ $data->{resourceSets}[0]{resources} || [] };
     return wantarray ? @results : $results[0];
 }
+
 
 # Support AJAX API for backwards compatibility.
 
@@ -187,6 +189,15 @@ object.
 In scalar context, this method returns the first location result; and in
 list context it returns all location results.
 
+Any additional arguments will added to the request parameters. See the Bing
+Maps documention for the list of available parameters. An example:
+
+    @locations = $geocoder->geocode(
+        location            => $location,
+        includeNeighborhood => 1,
+        maxResults          => 20,
+    )
+
 Each location result is a hashref; a typical example looks like:
 
     {
@@ -238,7 +249,7 @@ returned from both APIs differs slightly.
 
 =head1 SEE ALSO
 
-L<http://msdn.microsoft.com/en-us/library/ff701713.aspx>
+L<http://msdn.microsoft.com/en-us/library/ff701711.aspx>
 
 L<Geo::Coder::Bing::Bulk>
 
@@ -246,8 +257,8 @@ L<Geo::Coder::Bing::Bulk>
 
 Please report any bugs or feature requests to
 L<http://rt.cpan.org/Public/Bug/Report.html?Queue=Geo-Coder-Bing>. I will be
-notified, and then you'll automatically be notified of progress on your bug
-as I make changes.
+notified, and then you'll automatically be notified of progress on your bug as
+I make changes.
 
 =head1 SUPPORT
 
