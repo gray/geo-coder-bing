@@ -8,9 +8,6 @@ use Test::More;
 unless ($ENV{BING_MAPS_KEY}) {
     plan skip_all => 'BING_MAPS_KEY environment variable must be set';
 }
-else {
-    plan tests => 20;
-}
 
 my $debug = $ENV{GEO_CODER_BING_DEBUG};
 unless ($debug) {
@@ -148,3 +145,5 @@ SKIP: {
     my $location = $geocoder->geocode($address);
     like($location->{Address}{PostalCode}, qr/^98052\b/, 'https');
 }
+
+done_testing;
