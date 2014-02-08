@@ -1,5 +1,8 @@
 Revision history for Geo-Coder-Bing
 
+0.12  Sat Feb  8 03:44:39 UTC 2014
+    - Allowed optional query paramaters. (GH #2)
+
 0.11  Tue Mar 29 23:55:21 UTC 2011
     - Required newer LWP with better HTTPS support.
 
