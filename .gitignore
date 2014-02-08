@@ -1,5 +1,6 @@
 Geo-Coder-Bing-*
 Makefile
 Makefile.old
+MYMETA.*
 blib/
 pm_to_blib
