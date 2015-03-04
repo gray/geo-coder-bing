@@ -1,5 +1,8 @@
 Revision history for Geo-Coder-Bing
 
+0.13  Wed Mar  4 22:21:20 UTC 2015
+    - Added reverse_geocode method. (RT #102509)
+
 0.12  Sat Feb  8 03:44:39 UTC 2014
     - Allowed optional query paramaters. (GH #2)
 
