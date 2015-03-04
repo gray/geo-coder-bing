@@ -69,6 +69,17 @@ my $geocoder = Geo::Coder::Bing->new(
     );
 }
 
+{
+    my ($lat, $lon) = qw(47.640068 -122.129858);
+    my $location = $geocoder->reverse_geocode(lat => $lat, lon => $lon);
+    like(
+        $location->{address}{formattedAddress},
+        qr/\bMicrosoft Way, Redmond, WA\b/,
+        "correct reverse geocode for $lat,$lon",
+    );
+}
+
+
 SKIP: {
     skip 'no SSL support', 1 unless $has_ssl;
 

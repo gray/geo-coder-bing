@@ -71,23 +71,8 @@ sub _geocode_rest {
         %params,
     );
 
-    my $res = $self->{response} = $self->ua->get($uri);
-    return unless $res->is_success;
-
-    # Change the content type of the response from 'application/json' so
-    # HTTP::Message will decode the character encoding.
-    $res->content_type('text/plain');
-
-    my $content = $res->decoded_content;
-    return unless $content;
-
-    my $data = eval { from_json($content) };
-    return unless $data;
-
-    my @results = @{ $data->{resourceSets}[0]{resources} || [] };
-    return wantarray ? @results : $results[0];
+    return $self->_rest_request($uri);
 }
-
 
 # Support AJAX API for backwards compatibility.
 
@@ -134,6 +119,54 @@ sub _geocode_ajax {
     return unless $data;
 
     my @results = @{ $data->{d}{Results} || [] };
+    return wantarray ? @results : $results[0];
+}
+
+sub reverse_geocode {
+    my ($self, @params) = @_;
+    my %params = (@params % 2) ? (latlng => @params) : @params;
+
+    $_ = Encode::encode('utf-8', $_) for values %params;
+
+    # Maintain api compatibility with other geocoders.
+    my ($lat, $lon);
+    if (my $latlon = delete $params{latlng}) {
+        ($lat, $lon) = split '\s*,\s*', $latlon;
+    }
+    else {
+        $lat = delete $params{lat};
+        ($lon) = grep defined, delete @params{qw(lon lng long)};
+    }
+    return unless 2 == grep defined, $lat, $lon;
+
+    my $uri = URI->new("http://dev.virtualearth.net/REST/v1/Locations/$lat,$lon");
+    $uri->scheme('https') if $self->{https};
+    $uri->query_form(
+        key => $self->{key},
+        %params,
+    );
+
+    return $self->_rest_request($uri);
+}
+
+sub _rest_request {
+    my ($self, $uri) = @_;
+    return unless $uri;
+
+    my $res = $self->{response} = $self->ua->get($uri);
+    return unless $res->is_success;
+
+    # Change the content type of the response from 'application/json' so
+    # HTTP::Message will decode the character encoding.
+    $res->content_type('text/plain');
+
+    my $content = $res->decoded_content;
+    return unless $content;
+
+    my $data = eval { from_json($content) };
+    return unless $data;
+
+    my @results = @{ $data->{resourceSets}[0]{resources} || [] };
     return wantarray ? @results : $results[0];
 }
 
@@ -224,6 +257,13 @@ Each location result is a hashref; a typical example looks like:
             type        => "Point",
         },
     }
+
+=head2 reverse_geocode
+
+    $location = $geocoder->reverse_geocode(lat => $lat, lon => $lon)
+    $location = $geocoder->reverse_geocode(latlng => "$lat,$lon")
+
+Returns a location result for the given lat/lon pair.
 
 =head2 response
 
